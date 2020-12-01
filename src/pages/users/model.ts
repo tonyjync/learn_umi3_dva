@@ -1,4 +1,5 @@
 import { Reducer, Effect, Subscription } from 'umi'
+import { getUserList } from './service'
 
 //Model 是一个对像
 interface UserModelType {
@@ -19,45 +20,25 @@ const UserModel: UserModelType = {
     state: {},
     reducers: {
         getlist(state, { payload }) {
-
+            return payload;
         }
     },
     effects: {
-        getremote({ payload }, { put }) {
-            const data = [
-                {
-                    key: '1',
-                    name: 'John Brown',
-                    age: 32,
-                    address: 'New York No. 1 Lake Park',
-                    tags: ['nice', 'developer'],
-                },
-                {
-                    key: '2',
-                    name: 'Jim Green',
-                    age: 42,
-                    address: 'London No. 1 Lake Park',
-                    tags: ['loser'],
-                },
-                {
-                    key: '3',
-                    name: 'Joe Black',
-                    age: 32,
-                    address: 'Sidney No. 1 Lake Park',
-                    tags: ['cool', 'teacher'],
-                },
-            ];
-        },
-        subscriptions: {
-            setup({ dispatch, history }) {
-                history.listen(({ pathname }) => {
-                    if (pathname == '/users') {
-                        dispatch({ type: 'getlist' })
-                    }
-                })
+        *getremote({ payload }, { put, call }) {
+            const data = yield call(getUserList);
+            yield put({ type: 'getlist', payload: data });
+        }
+    },
+    subscriptions: {
+        setup({ dispatch, history }) {
+            history.listen(({ pathname }) => {
+                if (pathname == '/users') {
+                    dispatch({ type: 'getremote' })
+                }
+            })
 
-            }
         }
     }
+}
 
 export default UserModel;
