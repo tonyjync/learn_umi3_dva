@@ -12,6 +12,11 @@ export function getRoutes() {
     "component": require('@/pages/index.tsx').default
   },
   {
+    "path": "/phone",
+    "exact": true,
+    "component": require('@/pages/phone/index.tsx').default
+  },
+  {
     "path": "/users",
     "exact": true,
     "component": require('@/pages/users/index.tsx').default

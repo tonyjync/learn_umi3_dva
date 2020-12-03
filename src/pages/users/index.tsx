@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Table, Space } from 'antd';
+import { Table, Space, Popconfirm, Button } from 'antd';
 import { connect } from 'umi'
 import UserModal from './components/UserModal'
 
-const index = ({ users, dispatch }) => {
+const index = ({ users, dispatch, loading }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [record, setRecord] = useState(undefined);
     const [modalTitle, setModalTile] = useState('Basic title');
@@ -14,7 +14,15 @@ const index = ({ users, dispatch }) => {
             render: (text, record) => (
                 <Space size="middle">
                     <a onClick={() => { editModal(record) }}>修改</a>
-                    <a onClick={() => { delModal(record) }}>删除</a>
+                    <Popconfirm
+                        title="Are you sure to delete this user?"
+                        onConfirm={() => { confirm(record.id) }}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <a>删除</a>
+                    </Popconfirm>
+
                 </Space>
             ),
         },
@@ -37,6 +45,11 @@ const index = ({ users, dispatch }) => {
             title: '创建日期',
             dataIndex: 'create_time',
             key: 'create_time',
+        },
+        {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
         }
 
     ];
@@ -44,33 +57,51 @@ const index = ({ users, dispatch }) => {
         setModalVisible(false)
     }
     const editModal = (recordget) => {
+        const id = recordget.id || ''
         setModalVisible(true)
         setRecord(recordget)
-        setModalTile("Add User")
+        setModalTile("修改序号：" + id)
     }
-    const delModal = (recordget) => {
+
+    const modeOnFinish = (values) => {
+        if (record) {
+            const id = record.id;
+            dispatch({ type: 'users/edit', payload: { id, values } })
+        } else {
+            dispatch({ type: 'users/add', payload: { values } })
+        }
+        setModalVisible(false)
+    }
+    const confirm = (id) => {
+        dispatch({ type: 'users/delete', payload: { id } })
+    }
+    const addUser = () => {
         setModalVisible(true)
-        setRecord(recordget)
-        setModalTile("Del User")
+        setRecord(undefined)
+        setModalTile("添加")
     }
 
 
     return (
         <div className="list-table">
-            <Table columns={columns} dataSource={users.data} rowKey="id" />
+            <Button type="primary" onClick={addUser}>Add</Button>
+            <Table columns={columns} dataSource={users.data} rowKey="id" loading={loading} />
             <UserModal
                 modalTitle={modalTitle}
                 modalvisible={modalVisible}
                 editHandler={editHandler}
-                record={record}>
+                record={record}
+                modeOnFinish={modeOnFinish}
+            >
             </UserModal>
         </div>
     )
 }
 
-const mapStateToProps = ({ users }) => {
+const mapStateToProps = ({ users, loading }) => {
     return {
-        users
+        users,
+        loading: loading.models.users
     }
 }
 
